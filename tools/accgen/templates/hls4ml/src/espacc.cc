@@ -19,11 +19,14 @@ load_data:
     load_ctrl.length = SIZE_IN_CHUNK;
     load_ctrl.size = SIZE_WORD_T;
 
+    dma_word_t tmp;
+
     for (unsigned i = 0; i < SIZE_IN_CHUNK; i++) {
-    	load_label0:for(unsigned j = 0; j < VALUES_PER_WORD; j++) {
+        tmp = (dma_word_t) in1[base+i];
+        load_label0:for(unsigned j = 0; j < VALUES_PER_WORD; j++) {
 	    int index = i * VALUES_PER_WORD + j;
 	    if (index < SIZE_IN_CHUNK_DATA)
-		_inbuff[i * VALUES_PER_WORD + j] = (input_t) in1[base + i].word[j];
+		_inbuff[i * VALUES_PER_WORD + j] = (input_t) tmp.word[j];
     	}
     }
 }
@@ -39,21 +42,23 @@ store_data:
     store_ctrl.length = SIZE_OUT_CHUNK;
     store_ctrl.size = SIZE_WORD_T;
 
+    dma_word_t tmp;
+
     for (unsigned i = 0; i < SIZE_OUT_CHUNK; i++) {
 	store_label1:for(unsigned j = 0; j < VALUES_PER_WORD; j++) {
 	    int index = i * VALUES_PER_WORD + j;
 	    if (index < SIZE_OUT_CHUNK_DATA)
-		out[base + i].word[j] = (word_t) _outbuff[i * VALUES_PER_WORD + j];
+                tmp.word[j] = (word_t) _outbuff[i * VALUES_PER_WORD + j];
 	    else
-	    	out[base + i].word[j] = 0;
+                tmp.word[j] = 0;
 	}
+        out[base+i] = tmp;
     }
 }
 
 void compute(input_t _inbuff[SIZE_IN_CHUNK_DATA], result_t _outbuff[SIZE_OUT_CHUNK_DATA])
 {
     // computation
-    unsigned short size_in1, size_out1;
     myproject(_inbuff, _outbuff, size_in1, size_out1);
 }
 

@@ -51,10 +51,9 @@ foreach dma $dma_width {
 	}
 
 	# Config HLS
-	config_rtl -prefix "${ACCELERATOR}_dma${dma}_w${width}_" 
+	config_rtl -prefix "${ACCELERATOR}_dma${dma}_w${width}_"
 	config_compile -no_signed_zeros=0 -unsafe_math_optimizations=0
 	config_schedule -effort medium -relax_ii_for_timing=0 -verbose=0
-	config_bind -effort medium
 	config_sdx -optimization_level none -target none
 	set_clock_uncertainty 12.5%
 
