@@ -31,7 +31,7 @@ foreach dma $dma_width {
 	add_files [glob ../src/*] -cflags "-I../inc -I../hls4ml/firmware -I[file normalize ../hls4ml/firmware/nnet_utils] -DDMA_SIZE=${dma} -DDATA_BITWIDTH=${width} -std=c++0x "
 	add_files -tb ../tb/tb.cc -cflags "-I../inc -I../hls4ml/firmware -I[file normalize ../hls4ml/firmware/nnet_utils] -Wno-unknown-pragmas -Wno-unknown-pragmas -DDMA_SIZE=${dma} -DDATA_BITWIDTH=${width} -std=c++0x "
 
-	open_solution "${ACCELERATOR}_acc"
+	open_solution -flow_target vivado "${ACCELERATOR}_acc"
 
 	create_clock -period $clock_period -name default
 
@@ -51,11 +51,8 @@ foreach dma $dma_width {
 	}
 
 	# Config HLS
-	config_rtl -prefix "${ACCELERATOR}_dma${dma}_w${width}_"
+	config_rtl -module_prefix "${ACCELERATOR}_dma${dma}_w${width}_"
 	config_compile -no_signed_zeros=0 -unsafe_math_optimizations=0
-	config_schedule -verbose=0
-        config_bind
-	config_sdx -optimization_level none -target none
 	set_clock_uncertainty 12.5%
 
 	# Directives
