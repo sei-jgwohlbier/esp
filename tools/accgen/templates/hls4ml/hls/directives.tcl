@@ -11,4 +11,3 @@ add_files [glob ../hls4ml/firmware/*.cpp] -cflags "-I../inc \
 	  -DDMA_SIZE=${dma} -DDATA_BITWIDTH=${width} -std=c++0x "
 add_files -tb ../hls4ml/firmware/weights
 add_files -tb ../hls4ml/tb_data
-catch {config_array_partition -maximum_size 4096}
