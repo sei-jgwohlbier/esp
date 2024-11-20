@@ -35,7 +35,7 @@ foreach dma $dma_width {
 	add_files [glob ../src/*] -cflags "-I../inc -DDMA_SIZE=${dma} -DDATA_BITWIDTH=${width} -std=c++0x "
 	add_files -tb ../tb/tb.cc -cflags "-I../inc -Wno-unknown-pragmas -DDMA_SIZE=${dma} -DDATA_BITWIDTH=${width} -std=c++0x "
 
-	open_solution "${ACCELERATOR}_acc"
+	open_solution -flow_target vivado "${ACCELERATOR}_acc"
 
 	create_clock -period $clock_period -name default
 
@@ -62,14 +62,11 @@ foreach dma $dma_width {
 
 	# Config HLS
 	if {$datatype eq ""} {
-	    config_rtl -prefix "${ACCELERATOR}_dma${dma}_w${width}_"
+	    config_rtl -module_prefix "${ACCELERATOR}_dma${dma}_w${width}_"
 	} else {
-	    config_rtl -prefix "${ACCELERATOR}_dma${dma}_w${width}_${datatype}_"
+	    config_rtl -module_prefix "${ACCELERATOR}_dma${dma}_w${width}_${datatype}_"
 	}
 	config_compile -no_signed_zeros=0 -unsafe_math_optimizations=0
-	config_schedule -effort medium -relax_ii_for_timing=0 -verbose=0
-	config_bind -effort medium
-	config_sdx -optimization_level none -target none
 	set_clock_uncertainty 12.5%
 
 	# Directives

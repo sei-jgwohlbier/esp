@@ -6,7 +6,7 @@
 
 #include <ap_fixed.h>
 #include <ap_int.h>
-#include "hls_linear_algebra.h"
+#include <hls_stream.h>
 using namespace hls;
 
 #define __round_mask(x, y) ((y)-1)
@@ -124,7 +124,7 @@ void store(word_t _outbuff[SIZE_OUT_CHUNK_DATA], dma_word_t *out,
 	dma_info_t &store_ctrl);
 
 struct TRAITS_SVD:
-	hls::svd_traits<M_MAX, M_MAX, float, float>{
+    hls::svd_traits<M_MAX, M_MAX, float, float>{
 	static const int NUM_SWEEPS = 6;
 	static const int OFF_DIAG_II = 20;
 	static const int DIAG_II = 32;

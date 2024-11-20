@@ -17,9 +17,11 @@ load_data:
     load_ctrl.length = SIZE_IN_CHUNK;
     load_ctrl.size = SIZE_WORD_T;
 
+    dma_word_t tmp;
     for (unsigned i = 0; i < SIZE_IN_CHUNK; i++) {
+        tmp = in1[base + i];
     	load_label0:for(unsigned j = 0; j < VALUES_PER_WORD; j++) {
-	    _inbuff[i * VALUES_PER_WORD + j] = in1[base + i].word[j];
+	    _inbuff[i * VALUES_PER_WORD + j] = tmp.word[j];
     	}
     }
 }
@@ -35,10 +37,12 @@ store_data:
     store_ctrl.length = SIZE_OUT_CHUNK;
     store_ctrl.size = SIZE_WORD_T;
 
+    dma_word_t tmp;
     for (unsigned i = 0; i < SIZE_OUT_CHUNK; i++) {
 	store_label1:for(unsigned j = 0; j < VALUES_PER_WORD; j++) {
-	    out[base + i].word[j] = _outbuff[i * VALUES_PER_WORD + j];
+	    tmp.word[j] = _outbuff[i * VALUES_PER_WORD + j];
 	}
+        out[base + i] = tmp;
     }
 }
 

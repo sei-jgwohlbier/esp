@@ -19,11 +19,11 @@ load_data:
     load_ctrl.length = SIZE_IN_CHUNK;
     load_ctrl.size = SIZE_WORD_T;
 
+    dma_word_t tmp;
     for (unsigned i = 0; i < SIZE_IN_CHUNK; i++) {
-    	load_label0:for(unsigned j = 0; j < VALUES_PER_WORD; j++) {
-	    int index = i * VALUES_PER_WORD + j;
-	    if (index < SIZE_IN_CHUNK_DATA)
-		_inbuff[i * VALUES_PER_WORD + j] = (input_t) in1[base + i].word[j];
+        tmp = in1[base + i];
+        load_label0:for(unsigned j = 0; j < VALUES_PER_WORD; j++) {
+            _inbuff[i * VALUES_PER_WORD + j] = tmp.word[j];
     	}
     }
 }
@@ -39,24 +39,42 @@ store_data:
     store_ctrl.length = SIZE_OUT_CHUNK;
     store_ctrl.size = SIZE_WORD_T;
 
+    dma_word_t tmp;
     for (unsigned i = 0; i < SIZE_OUT_CHUNK; i++) {
 	store_label1:for(unsigned j = 0; j < VALUES_PER_WORD; j++) {
-	    int index = i * VALUES_PER_WORD + j;
-	    if (index < SIZE_OUT_CHUNK_DATA)
-		out[base + i].word[j] = (word_t) _outbuff[i * VALUES_PER_WORD + j];
-	    else
-	    	out[base + i].word[j] = 0;
+            tmp.word[j] = (word_t) _outbuff[i * VALUES_PER_WORD + j];
 	}
+        out[base + i] = tmp;
     }
 }
 
-void compute(input_t _inbuff[SIZE_IN_CHUNK_DATA], result_t _outbuff[SIZE_OUT_CHUNK_DATA])
+void compute(model_default_t _inbuff[SIZE_IN_CHUNK_DATA],
+             model_default_t _outbuff[SIZE_OUT_CHUNK_DATA])
 {
-    // computation
-    unsigned short size_in1, size_out1;
-    myproject(_inbuff, _outbuff, size_in1, size_out1);
-}
+    // define streams
+    hls::stream<input_t> x("x");
+    hls::stream<layerN_t> layerN_out("layerN_out"); // matching your project
 
+    // load input stream
+    size_t i_pack = 0;
+    input_t dst_pack;
+    for (size_t i = 0; i < SIZE_IN_CHUNK_DATA; i++) {
+        dst_pack[i_pack++] = (float_t)_inbuff[i];
+        if (i_pack == input_t::size) {
+            i_pack = 0;
+            x.write(dst_pack);
+        }
+    }
+
+    // call the project
+    myproject(x, layerN_out);
+
+    // load outbuff
+    layerN_t layerN = layerN_out.read();
+    for (size_t i = 0; i < SIZE_OUT_CHUNK_DATA - 2; i++) {
+        _outbuff[i] = layerN[i];
+    }
+}
 void top(dma_word_t *out, dma_word_t *in1, const unsigned conf_info_nbursts,
 	 dma_info_t &load_ctrl, dma_info_t &store_ctrl)
 {
@@ -64,8 +82,8 @@ void top(dma_word_t *out, dma_word_t *in1, const unsigned conf_info_nbursts,
 go:
     for (unsigned i = 0; i < conf_info_nbursts; i++)
     {
-	input_t _inbuff[SIZE_IN_CHUNK_DATA];
-	result_t _outbuff[SIZE_OUT_CHUNK_DATA];
+	model_default_t _inbuff[SIZE_IN_CHUNK_DATA];
+        model_default_t _outbuff[SIZE_OUT_CHUNK_DATA];
 
         load(_inbuff, in1, i, load_ctrl, 0);
         compute(_inbuff, _outbuff);
