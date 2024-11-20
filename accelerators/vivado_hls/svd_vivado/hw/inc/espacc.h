@@ -6,7 +6,9 @@
 
 #include <ap_fixed.h>
 #include <ap_int.h>
-#include <hls_stream.h>
+#include "svd.hpp"
+#include "matrix_multiply.hpp"
+
 using namespace hls;
 
 #define __round_mask(x, y) ((y)-1)
@@ -124,7 +126,7 @@ void store(word_t _outbuff[SIZE_OUT_CHUNK_DATA], dma_word_t *out,
 	dma_info_t &store_ctrl);
 
 struct TRAITS_SVD:
-    hls::svd_traits<M_MAX, M_MAX, float, float>{
+  xf::solver::svdTraits<M_MAX, M_MAX, float, float>{
 	static const int NUM_SWEEPS = 6;
 	static const int OFF_DIAG_II = 20;
 	static const int DIAG_II = 32;
@@ -132,28 +134,28 @@ struct TRAITS_SVD:
 };
 
 struct TRAITS_C:
-hls::matrix_multiply_traits<hls::Transpose,hls::Transpose,Q_MAX,M_MAX,P_MAX,Q_MAX,word_t, word_t>{
+  xf::solver::matrixMultiplyTraits<xf::solver::Transpose,xf::solver::Transpose,Q_MAX,M_MAX,P_MAX,Q_MAX,word_t, word_t>{
 	static const int ARCH = 2;
 	//static const int INNER_II = 3;
 	static const int UNROLL_FACTOR = 16;
 };
 
 struct TRAITS_A:
-hls::matrix_multiply_traits<hls::NoTranspose,hls::NoTranspose,M_MAX,P_MAX,P_MAX,M_MAX,word_t, word_t>{
+  xf::solver::matrixMultiplyTraits<xf::solver::NoTranspose,xf::solver::NoTranspose,M_MAX,P_MAX,P_MAX,M_MAX,word_t, word_t>{
 	static const int ARCH = 2;
 	//static const int INNER_II = 9;
 	//static const int UNROLL_FACTOR = 3;
 };
 
 struct TRAITS_A_F:
-hls::matrix_multiply_traits<hls::NoTranspose,hls::ConjugateTranspose,M_MAX,M_MAX,M_MAX,M_MAX,float, float>{
+  xf::solver::matrixMultiplyTraits<xf::solver::NoTranspose,xf::solver::ConjugateTranspose,M_MAX,M_MAX,M_MAX,M_MAX,float, float>{
 	static const int ARCH = 3;
 	//static const int INNER_II = 9;
 	//static const int UNROLL_FACTOR = 3; Possible
 };
 
 struct TRAITS_X_SINK:
-hls::matrix_multiply_traits<hls::NoTranspose,hls::Transpose,M_MAX,M_MAX,P_MAX,M_MAX,word_t, word_t>{
+  xf::solver::matrixMultiplyTraits<xf::solver::NoTranspose,xf::solver::Transpose,M_MAX,M_MAX,P_MAX,M_MAX,word_t, word_t>{
 	static const int ARCH = 2;
 	//static const int INNER_II = 16;
 	//static const int UNROLL_FACTOR = 3;
